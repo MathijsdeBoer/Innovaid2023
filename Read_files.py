@@ -10,7 +10,7 @@ output_path = Path(r'')
 filelist = list(startpath.glob('**/*.csv') )      
 
 
-for elem in filelist[0:1]:
+for elem in filelist:
     complete_ds = pd.read_csv(elem)
     complete_ds.describe()
 
@@ -27,11 +27,8 @@ for elem in filelist[0:1]:
     # create subset, save
     subset = complete_ds.loc[ :, [ 'TIME', 'IMAGE_POSITION', 'IMAGE_TYPE', 'SCENE_INDEX']]
     subset= subset.fillna("NONE")
-    pd.unique(subset['IMAGE_TYPE'])
 
     output_path = Path(str(elem).replace('input', 'subset') )
     output_path.parent.mkdir(parents=True, exist_ok=True)
     subset.to_csv(output_path, index = False)
 
-
-# %%
