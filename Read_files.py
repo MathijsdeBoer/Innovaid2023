@@ -18,16 +18,16 @@ score_df = pd.read_csv(out_file_path)
 # outliers
 
 conditions_PHQ9 = [
-    (score_df['PHQ9'] > 0 ) & (score_df['PHQ9'] < 4  ),
-    (score_df['PHQ9'] > 4 ) & (score_df['PHQ9'] < 9  ),
-    (score_df['PHQ9'] > 9 ) & (score_df['PHQ9'] < 14 ),
-    (score_df['PHQ9'] > 14 )
+    (score_df['PHQ9'] >= 0  ) & (score_df['PHQ9'] < 4  ),
+    (score_df['PHQ9'] >= 4  ) & (score_df['PHQ9'] < 9  ),
+    (score_df['PHQ9'] >= 9  ) & (score_df['PHQ9'] < 14 ),
+    (score_df['PHQ9'] >= 14 )
 ]
 conditions_BDI = [
-    (score_df['BDI'] > 0  ) & (score_df['BDI'] < 9   ),
-    (score_df['BDI'] > 9  ) & (score_df['BDI'] < 18  ),
-    (score_df['BDI'] > 18 ) & (score_df['BDI'] < 29  ),
-    (score_df['BDI'] > 29 ) 
+    (score_df['BDI'] >= 0  ) & (score_df['BDI'] < 9   ),
+    (score_df['BDI'] >= 9  ) & (score_df['BDI'] < 18  ),
+    (score_df['BDI'] >= 18 ) & (score_df['BDI'] < 29  ),
+    (score_df['BDI'] >= 29 ) 
 ]
 
 values = ['min', 'mild', 'moderate', 'mod_severe']
@@ -53,15 +53,30 @@ print(score_df)
  
 diffs = abs( score_df['PHQ9_%'] - score_df['BDI_%' ]) 
 
+Q1 = diffs.quantile(0.25)
+Q3 = diffs.quantile(0.75)
+IQR = Q3 - Q1
+
+lower_threshold = Q1 - 1.5 * IQR
+upper_threshold = Q3 + 1.5 * IQR
+
+# Mask for rows within the IQR range
+within_iqr_mask = (diffs >= lower_threshold) & (diffs <= upper_threshold)
+
+# Keep only rows within the IQR range
+filtered_score_df = score_df[within_iqr_mask]
+# filtered_score_df = score_df[~(within_iqr_mask)]
+
+
 #%%
 
 # subset of input
 
-for elem in filelist[0:5]:
+for elem in filelist:
 
     series_id = elem.stem
 
-    index_containing_ddd = score_df[score_df['sid'].str.contains(series_id)].index[0]
+    idx_remove = filtered_score_df[filtered_score_df['sid'].str.contains(series_id)].index[0]
     
     complete_ds = pd.read_csv(elem)
 
@@ -78,7 +93,7 @@ for elem in filelist[0:5]:
 
     # create subset, save
     subset = complete_ds.loc[ :, [ 'TIME', 'IMAGE_POSITION', 'IMAGE_TYPE', 'SCENE_INDEX']]
-    subset['RANGE_BDI'] = score_df.loc[ index_containing_ddd, 'RANGE_BDI'] 
+    subset['RANGE_BDI'] = score_df.loc[ idx_remove, 'RANGE_BDI'] 
     subset= subset.fillna("NONE")
     pd.unique(subset['IMAGE_TYPE'])
 
