@@ -25,11 +25,13 @@ for elem in filelist[0:1]:
     complete_ds['TIME'] = complete_ds.index*time_sampl
 
     # create subset, save
-    subset = complete_ds.loc[ :, [ 'TIME', 'IMAGE_POSITION', 'IMAGE_TYPE', 'SCENE_INDEX']] 
+    subset = complete_ds.loc[ :, [ 'TIME', 'IMAGE_POSITION', 'IMAGE_TYPE', 'SCENE_INDEX']]
+    subset= subset.fillna("NONE")
+    pd.unique(subset['IMAGE_TYPE'])
 
     output_path = Path(str(elem).replace('input', 'subset') )
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    subset.to_csv(output_path)
+    subset.to_csv(output_path, index = False)
 
 
 # %%
