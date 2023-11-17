@@ -76,7 +76,7 @@ for elem in filelist:
 
     series_id = elem.stem
 
-    idx_remove = filtered_score_df[filtered_score_df['sid'].str.contains(series_id)].index[0]
+    idx_remove = score_df[score_df['sid'].str.contains(series_id)].index[0]
     
     complete_ds = pd.read_csv(elem)
 
