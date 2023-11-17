@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
+from tqdm import tqdm
 
 
 def load_single(path: Path) -> pd.DataFrame:
@@ -9,7 +10,13 @@ def load_single(path: Path) -> pd.DataFrame:
     :param path: path to the csv file
     :return: a pandas dataframe
     """
-    return pd.read_csv(path)
+    df = pd.read_csv(path)
+    df["SESSIONID"] = path.stem
+
+    # Set path name and TimeStamp as index
+    df.set_index(["SESSIONID", "TIME"], inplace=True)
+
+    return df
 
 
 def load_set(path: Path) -> pd.DataFrame:
@@ -20,16 +27,14 @@ def load_set(path: Path) -> pd.DataFrame:
     """
     samples = None
 
-    files = [x for x in path.iterdir() if x.is_file()]
+    files = [x.resolve() for x in path.iterdir() if x.is_file()]
+    print(f"Found {len(files)} files")
 
-    for file in files:
+    for file in tqdm(files, desc="Loading samples"):
         if samples is None:
             samples = load_single(file)
-            samples["SessionID"] = file.stem
         else:
-            sample = load_single(file)
-            sample["SessionID"] = file.stem
-            samples = samples.concat(sample)
+            pd.concat([samples, load_single(file)])
 
     return samples
 
