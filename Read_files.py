@@ -51,7 +51,7 @@ print(score_df)
 
 # subset of input
 
-for elem in filelist[0:5]:
+for elem in filelist:
 
     series_id = elem.stem
 
