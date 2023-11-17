@@ -3,14 +3,15 @@
 from pathlib import Path
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
-startpath = Path(r'C:\Users\gdonno\Desktop\Hackathon\innovaid_hackathon_anima\input')
-output_path = Path(r'')
+startpath = Path(r'../data/input/').resolve()
+output_path = Path(r'../data/preprocessed/samples').resolve()
 
-filelist = list(startpath.glob('**/*.csv') )      
+filelist = [x.resolve() for x in startpath.iterdir() if x.is_file()]
 
-out_file_path = Path('/', startpath.parent,'output.csv') 
-score_df = pd.read_csv(out_file_path)
+gt_file = startpath.parent / 'output.csv' 
+score_df = pd.read_csv(gt_file)
 
 
 #%%
@@ -72,7 +73,7 @@ filtered_score_df = score_df[within_iqr_mask]
 
 # subset of input
 
-for elem in filelist:
+for elem in tqdm(filelist):
 
     series_id = elem.stem
 
@@ -92,14 +93,14 @@ for elem in filelist:
     complete_ds['TIME'] = complete_ds.index*time_sampl
 
     # create subset, save
-    subset = complete_ds.loc[ :, [ 'TIME', 'IMAGE_POSITION', 'IMAGE_TYPE', 'SCENE_INDEX']]
+    subset = complete_ds.loc[ :, [ 'TIME', 'IMAGE_POSITION', 'IMAGE_TYPE', 'SCENE_INDEX', 'RX', 'RY']]
     subset['RANGE_BDI'] = score_df.loc[ idx_remove, 'RANGE_BDI'] 
     subset= subset.fillna("NONE")
     pd.unique(subset['IMAGE_TYPE'])
 
-    output_path = Path(str(elem).replace('input', 'subset') )
+    out_file = output_path / elem.name
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    subset.to_csv(output_path, index = False)
+    subset.to_csv(out_file, index = False)
 
 #%%
 
