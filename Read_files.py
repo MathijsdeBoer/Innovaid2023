@@ -1,3 +1,5 @@
+#%%
+
 from pathlib import Path
 import pandas as pd
 
@@ -10,6 +12,12 @@ filelist = list(startpath.glob('**/*.csv') )
 for elem in filelist[0:1]:
     complete_ds = pd.read_csv(elem)
     complete_ds.describe()
+
+
+    subset = complete_ds.loc[ :, [ 'TIMESTAMP', 'IMAGE', 'IMAGE_POSITION', 'IMAGE_TYPE']] 
+
+    
+
 
 
 
