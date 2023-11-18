@@ -26,23 +26,15 @@ def load_set(path: Path) -> pd.DataFrame:
     files = [x.resolve() for x in path.iterdir() if x.is_file()]
     print(f"Found {len(files)} files")
 
-    for idx, file in (prog_bar:= tqdm(enumerate(files), total=len(files), desc="Loading samples")):
+    for file in (prog_bar:= tqdm(files, total=len(files), desc="Loading samples")):
         prog_bar.set_description(f"Loading {file.stem}")
         sample = load_single(file)
-        sample["SESSIONID"] = idx
+        sample["SESSIONID"] = file.stem
         times = sample["TIME"].unique()
-        sample["TIME"] = sample["TIME"].apply(lambda x: times.tolist().index(x))
+        time_map = {time: idx for idx, time in enumerate(times)}
+        sample["TIME"] = sample["TIME"].map(time_map)
         samples.append(sample)
 
     samples = pd.concat(samples, ignore_index=True)
     samples.set_index(["SESSIONID", "TIME"], inplace=True)
     return samples
-
-
-def load_gt(path: Path) -> pd.DataFrame:
-    """
-    Load data from a csv file
-    :param path: path to the csv file
-    :return: a pandas dataframe
-    """
-    return pd.read_csv(path)
