@@ -1,20 +1,15 @@
-#%%
-
 from pathlib import Path
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
 
-startpath = Path(r'../data/input/').resolve()
-output_path = Path(r'../data/preprocessed/samples').resolve()
+startpath = Path(r'../Data/input/').resolve()
+output_path = Path(r'../Data/preprocessed/samples').resolve()
 
 filelist = [x.resolve() for x in startpath.iterdir() if x.is_file()]
 
 gt_file = startpath.parent / 'output.csv' 
 score_df = pd.read_csv(gt_file)
-
-
-#%%
 
 # outliers
 
@@ -48,8 +43,6 @@ score_df['RANGE_BDI']  = np.select(conditions_BDI,  values, default='unknown')
 # Display the DataFrame
 print(score_df)
 
-
-#%%
 # Remove outliers
  
 diffs = abs( score_df['PHQ9_%'] - score_df['BDI_%' ]) 
@@ -67,9 +60,6 @@ within_iqr_mask = (diffs >= lower_threshold) & (diffs <= upper_threshold)
 # Keep only rows within the IQR range
 filtered_score_df = score_df[within_iqr_mask]
 # filtered_score_df = score_df[~(within_iqr_mask)]
-
-
-#%%
 
 # subset of input
 
@@ -99,11 +89,5 @@ for elem in tqdm(filelist):
     pd.unique(subset['IMAGE_TYPE'])
 
     out_file = output_path / elem.name
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.mkdir(parents=True, exist_ok=True)
     subset.to_csv(out_file, index = False)
-
-#%%
-
-
-
-# %%
